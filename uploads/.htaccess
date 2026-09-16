@@ -1,0 +1,15 @@
+# Keamanan: folder ini hanya untuk menyimpan foto, jangan izinkan eksekusi PHP sama sekali
+<FilesMatch "\.(php|phtml|php3|php4|php5|php7|pl|py|cgi|asp|aspx|sh)$">
+    Require all denied
+</FilesMatch>
+
+# Apache lama (mod_access)
+<IfModule !mod_authz_core.c>
+    <FilesMatch "\.(php|phtml|php3|php4|php5|php7|pl|py|cgi|asp|aspx|sh)$">
+        Order allow,deny
+        Deny from all
+    </FilesMatch>
+</IfModule>
+
+Options -ExecCGI
+php_flag engine off

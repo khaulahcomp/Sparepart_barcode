@@ -1,0 +1,207 @@
+QUICK INSTALLATION GUIDE
+Sparepart Barcode Manager v1.0
+
+⏱️ Waktu setup: ~15 menit (jika sudah terbiasa dengan cPanel)
+
+═══════════════════════════════════════════════════════════════
+
+STEP 1: PERSIAPAN (cPanel Dashboard)
+─────────────────────────────────────
+
+1.1 Buat Subdomain
+   - cPanel → Addon Domains (atau Subdomains)
+   - Domain: sparepart.tokosayaraya.com
+   - Doc Root: /home/cpaneluser/public_html/sparepart/
+   - Klik Add
+   
+1.2 Buat Database MySQL
+   - cPanel → MySQL Databases
+   - Database name: cpaneluser_sparepart_barcode
+   - Username: cpaneluser_sp_user
+   - Password: (generate strong password, catat)
+   - Klik Create Database
+   - Klik Add All Privileges
+
+═══════════════════════════════════════════════════════════════
+
+STEP 2: UPLOAD KODE APLIKASI
+───────────────────────────
+
+2.1 Siapkan file project
+   - Download & extract project zip
+   - Struktur lokal:
+     sparepart-app/
+     ├── index.php
+     ├── database.sql
+     ├── config/
+     ├── includes/
+     ├── modules/
+     └── assets/
+
+2.2 Upload via FTP
+   - FTP client: FileZilla / WinSCP
+   - Host: ftp.tokosayaraya.com (atau ip server)
+   - Username: cpaneluser
+   - Password: (FTP password)
+   - Folder tujuan: /public_html/sparepart/
+   - Upload semua file & folder
+
+   ATAU upload via cPanel File Manager:
+   - cPanel → File Manager
+   - Navigate ke /public_html/sparepart/
+   - Extract uploaded zip file (jika upload as zip)
+
+═══════════════════════════════════════════════════════════════
+
+STEP 3: IMPORT DATABASE
+──────────────────────
+
+3.1 Akses phpMyAdmin
+   - cPanel → phpMyAdmin
+   - Left panel: pilih database "cpaneluser_sparepart_barcode"
+   - Tab: Import
+
+3.2 Import SQL file
+   - File: database.sql (dari project folder)
+   - Format: SQL
+   - Klik Import
+   - Tunggu selesai (catat waktu ~ 2-5 detik)
+
+═══════════════════════════════════════════════════════════════
+
+STEP 4: KONFIGURASI DATABASE
+────────────────────────────
+
+4.1 Edit config/database.php
+   - Via cPanel File Manager atau FTP
+   - Edit file: /public_html/sparepart/config/database.php
+   - Ubah 4 baris ini sesuai data dari STEP 1.2:
+
+     define('DB_HOST', 'localhost');
+     define('DB_NAME', 'cpaneluser_sparepart_barcode');  ← sesuaikan
+     define('DB_USER', 'cpaneluser_sp_user');             ← sesuaikan
+     define('DB_PASS', 'password_yang_Anda_generate');   ← sesuaikan
+
+   - Save file
+
+═══════════════════════════════════════════════════════════════
+
+STEP 5: ATUR PERMISSION
+──────────────────────
+
+5.1 Folder uploads (via SSH/Terminal)
+   - cPanel → Terminal
+   - Jalankan:
+
+     cd /home/cpaneluser/public_html/sparepart/
+     chmod 755 .
+     chmod 755 config/
+     chmod 755 modules/
+     chmod 777 uploads/
+     chmod -R 777 uploads/*
+
+5.2 Jika tidak ada akses SSH, gunakan FTP:
+   - FTP client → kanan klik folder "uploads/"
+   - Properties / Permissions
+   - Set ke 777 (numerik) atau read+write+execute semua
+
+═══════════════════════════════════════════════════════════════
+
+STEP 6: VERIFIKASI PHP VERSION
+───────────────────────────────
+
+6.1 Cek PHP Version
+   - cPanel → Select PHP Version
+   - Pastikan PHP 8.0 ke atas
+
+6.2 Aktifkan ekstensi
+   - Tab Extensions, pastikan aktif:
+     ✓ pdo_mysql
+     ✓ gd
+     ✓ zip
+     ✓ xml
+   - (Biasanya sudah aktif default di cPanel modern)
+
+═══════════════════════════════════════════════════════════════
+
+STEP 7: TEST APLIKASI
+──────────────────────
+
+7.1 Akses halaman login
+   - Browser: https://sparepart.tokosayaraya.com/
+   - Expected: Halaman login muncul
+   - Jika error 500: lihat next troubleshooting section
+
+7.2 Login default
+   - Username: admin
+   - Password: admin123
+   - Klik Login
+   - Expected: Redirect ke halaman Katalog, navbar tampil
+
+═══════════════════════════════════════════════════════════════
+
+STEP 8: UBAH PASSWORD ADMIN (PENTING!)
+──────────────────────────
+
+Cara 1 - Via Code (jika ada akses SSH):
+   PHP_HASH=$(php -r "echo password_hash('PASSWORD_BARU', PASSWORD_BCRYPT);")
+   mysql -u root -e "UPDATE cpaneluser_sparepart_barcode.users 
+                      SET password_hash='$PHP_HASH' 
+                      WHERE username='admin';"
+
+Cara 2 - Via phpMyAdmin:
+   - cPanel → phpMyAdmin
+   - Database: cpaneluser_sparepart_barcode
+   - Tabel: users
+   - Klik row dengan username="admin"
+   - Edit password_hash (generate baru via online bcrypt)
+   - Save
+
+═══════════════════════════════════════════════════════════════
+
+SELESAI! ✓
+─────────
+
+Aplikasi sudah siap digunakan. Baca:
+- README.md untuk penggunaan lengkap
+- TESTING_CHECKLIST.md untuk 12 test case verifikasi
+- MANIFEST.txt untuk struktur & penjelasan file
+
+═══════════════════════════════════════════════════════════════
+
+TROUBLESHOOTING CEPAT
+─────────────────────
+
+❌ Error 500 / Halaman blank:
+   - SSH: tail -f /home/cpaneluser/public_html/sparepart/error_log
+   - Cek: config/database.php sudah benar?
+   - Cek: Database sudah di-import?
+
+❌ Login gagal (password salah):
+   - Pastikan default: admin / admin123 (case-sensitive)
+   - Kalo lupa, reset via phpMyAdmin STEP 8
+
+❌ Upload foto gagal:
+   - Cek: folder uploads/ permission 777?
+   - Cek: file size < 3MB?
+   - Cek: format JPG/PNG/WEBP?
+
+❌ Scanner USB tidak terbaca:
+   - Scanner harus mode HID Keyboard (emulate Enter key)
+   - Di halaman Scan, klik input field dulu (auto-focus)
+
+❌ Print barcode tidak keluar:
+   - Cek: printer sudah connected?
+   - Browser print dialog: pilih printer yang benar
+   - Zoom level 100% sebelum print
+
+═══════════════════════════════════════════════════════════════
+
+Contact Support:
+Hubungi developer yang membuat aplikasi ini untuk:
+- Custom request / feature tambahan
+- Integrasi dengan SIMBENG
+- Troubleshooting lebih detail
+- Backup & maintenance
+
+═══════════════════════════════════════════════════════════════

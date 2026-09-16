@@ -1,0 +1,83 @@
+body { background:#f4f6f9; }
+
+/* ============ KARTU MARKETPLACE ============ */
+.sp-card {
+  border: 1px solid #e3e6ea;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #fff;
+  transition: box-shadow .15s, transform .15s;
+  height: 100%;
+  cursor: pointer;
+}
+.sp-card:hover {
+  box-shadow: 0 6px 18px rgba(0,0,0,.10);
+  transform: translateY(-2px);
+}
+.sp-card__img-wrap {
+  aspect-ratio: 1/1;
+  background:#f1f3f5;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+}
+.sp-card__img-wrap img { width:100%; height:100%; object-fit:cover; }
+.sp-card__body { padding: .75rem .9rem; }
+.sp-card__kode {
+  font-family: monospace;
+  font-size: .72rem;
+  color:#6c757d;
+  background:#f1f3f5;
+  border-radius:6px;
+  padding:1px 6px;
+  display:inline-block;
+}
+.sp-card__nama { font-weight:600; font-size:.95rem; margin:.35rem 0 .15rem; line-height:1.25; min-height:2.4em; }
+.sp-card__meta { font-size:.78rem; color:#6c757d; }
+.sp-card__harga { color:#d6336c; font-weight:700; font-size:1.05rem; }
+.sp-card__stok-badge { font-size:.72rem; }
+.sp-card__footer { padding: .5rem .9rem .8rem; }
+
+/* Foto placeholder */
+.sp-thumb-placeholder { color:#adb5bd; font-size:2.5rem; }
+
+/* ============ LABEL BARCODE ============ */
+.label-sheet { display:flex; flex-wrap:wrap; gap:6mm; }
+.barcode-label {
+  border: 1px dashed #ced4da;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  padding:2mm;
+  box-sizing:border-box;
+  page-break-inside: avoid;
+  break-inside: avoid;
+  overflow:hidden;
+}
+.barcode-label svg { width:100%; height:auto; max-height:80%; }
+.barcode-label .lbl-nama {
+  font-size: 2.4mm;
+  text-align:center;
+  line-height:1.1;
+  margin-top:1mm;
+  max-width:100%;
+  overflow:hidden;
+  white-space:nowrap;
+  text-overflow:ellipsis;
+}
+
+.label-30x20 { width:30mm; height:20mm; }
+.label-40x25 { width:40mm; height:25mm; }
+.label-50x30 { width:50mm; height:30mm; }
+
+/* ============ PRINT ============ */
+@media print {
+  .no-print { display:none !important; }
+  body { background:#fff !important; }
+  .container-fluid { padding:0 !important; margin:0 !important; max-width:none !important; }
+  .print-page { margin:0; padding:0; }
+  .barcode-label { border-color:#000 !important; }
+  @page { margin: 8mm; }
+}
