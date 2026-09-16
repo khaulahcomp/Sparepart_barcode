@@ -17,10 +17,9 @@ $jenisMotor = trim($_GET['jenis_motor'] ?? '');
 $kategori   = trim($_GET['kategori'] ?? '');
 $stokFilter = trim($_GET['stok_filter'] ?? '');
 
-$result = sparepart_list($pdo, [
+$result = sparepart_list_all($pdo, [
     'q' => $q, 'merk' => $merk, 'jenis_motor' => $jenisMotor,
     'kategori' => $kategori, 'stok_filter' => $stokFilter,
-    'per_page' => 50000, // ambil maksimal semua
 ]);
 
 // Siapkan baris export: header + data
@@ -28,7 +27,7 @@ $rows = [
     ['Kode Custom','Nama Sparepart','Merk','Jenis Motor','Kategori','Satuan','Harga Beli','Harga Jual','Stok','Lokasi Rak','Keterangan'],
 ];
 
-foreach ($result['data'] as $sp) {
+foreach ($result as $sp) {
     $rows[] = [
         $sp['kode_custom'],
         $sp['nama_sparepart'],

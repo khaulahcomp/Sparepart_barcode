@@ -35,18 +35,14 @@ function sparepart_find_by_id(PDO $pdo, int $id): ?array
 }
 
 /**
- * List sparepart dengan search + filter + pagination (server-side, aman untuk 20rb+ data).
- *
- * @return array{data: array, total: int, page: int, perPage: int, totalPages: int}
+/**
+ * Bangun klausa WHERE + argumen prepared statement dari filter (dipakai bersama
+ * oleh sparepart_list dan sparepart_list_all supaya logika filter selalu konsisten).
  */
-function sparepart_list(PDO $pdo, array $params): array
+function sparepart_build_where(array $params): array
 {
-    $page    = max(1, (int)($params['page'] ?? 1));
-    $perPage = min(100, max(1, (int)($params['per_page'] ?? 24)));
-    $offset  = ($page - 1) * $perPage;
-
-    $where  = ['is_active = 1'];
-    $args   = [];
+    $where = ['is_active = 1'];
+    $args  = [];
 
     if (!empty($params['q'])) {
         $where[] = '(nama_sparepart LIKE ? OR kode_custom LIKE ?)';
@@ -76,7 +72,26 @@ function sparepart_list(PDO $pdo, array $params): array
         }
     }
 
-    $whereSql = implode(' AND ', $where);
+    return ['sql' => implode(' AND ', $where), 'args' => $args];
+}
+
+/**
+ * List sparepart dengan search + filter + pagination (server-side, aman untuk 20rb+ data).
+ * per_page dibatasi maksimal 1000 (cukup untuk kebutuhan browsing "ratusan per halaman"
+ * di UI, sekaligus menjaga browser tidak lag me-render ribuan kartu sekaligus).
+ * Untuk EXPORT (butuh SEMUA baris terfilter tanpa batas), gunakan sparepart_list_all().
+ *
+ * @return array{data: array, total: int, page: int, perPage: int, totalPages: int}
+ */
+function sparepart_list(PDO $pdo, array $params): array
+{
+    $page    = max(1, (int)($params['page'] ?? 1));
+    $perPage = min(1000, max(1, (int)($params['per_page'] ?? 24)));
+    $offset  = ($page - 1) * $perPage;
+
+    $w = sparepart_build_where($params);
+    $whereSql = $w['sql'];
+    $args = $w['args'];
 
     $countStmt = $pdo->prepare("SELECT COUNT(*) FROM spareparts WHERE $whereSql");
     $countStmt->execute($args);
@@ -94,6 +109,20 @@ function sparepart_list(PDO $pdo, array $params): array
         'perPage'    => $perPage,
         'totalPages' => (int)ceil($total / $perPage),
     ];
+}
+
+/**
+ * Ambil SEMUA baris yang cocok dengan filter, TANPA LIMIT/pagination sama sekali.
+ * Khusus dipakai untuk EXPORT EXCEL — jumlah baris yang di-export akan selalu
+ * sama persis dengan "Ditemukan X sparepart" di Katalog, berapa pun jumlahnya
+ * (termasuk 20.000+), tidak terpengaruh oleh pengaturan "views per page".
+ */
+function sparepart_list_all(PDO $pdo, array $params): array
+{
+    $w = sparepart_build_where($params);
+    $stmt = $pdo->prepare("SELECT * FROM spareparts WHERE {$w['sql']} ORDER BY updated_at DESC");
+    $stmt->execute($w['args']);
+    return $stmt->fetchAll();
 }
 
 function sparepart_distinct_values(PDO $pdo, string $column): array

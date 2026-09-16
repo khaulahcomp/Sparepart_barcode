@@ -13,7 +13,7 @@ $kategori   = trim($_GET['kategori'] ?? '');
 $stokFilter = trim($_GET['stok_filter'] ?? '');
 $page       = max(1, (int)($_GET['page'] ?? 1));
 
-$allowedPerPage = [12, 24, 48, 96];
+$allowedPerPage = [24, 48, 100, 200, 500, 1000];
 $perPage = (int)($_GET['per_page'] ?? 24);
 if (!in_array($perPage, $allowedPerPage, true)) {
     $perPage = 24;
