@@ -179,6 +179,49 @@ function sparepart_soft_delete(PDO $pdo, int $id): void
     $stmt->execute([$id]);
 }
 
+/**
+ * Ambil semua nama file foto milik sparepart ini (foto utama + foto tambahan),
+ * dipakai sebelum hard delete supaya file fisiknya juga bisa dihapus dari server.
+ * @return string[] daftar nama file (relatif terhadap uploads/sparepart/)
+ */
+function sparepart_get_all_photo_filenames(PDO $pdo, int $id): array
+{
+    $files = [];
+
+    $stmt = $pdo->prepare('SELECT foto FROM spareparts WHERE id = ?');
+    $stmt->execute([$id]);
+    $foto = $stmt->fetchColumn();
+    if ($foto) {
+        $files[] = $foto;
+    }
+
+    $stmt = $pdo->prepare('SELECT path_foto FROM sparepart_foto_tambahan WHERE sparepart_id = ?');
+    $stmt->execute([$id]);
+    foreach ($stmt->fetchAll(PDO::FETCH_COLUMN) as $path) {
+        if ($path) {
+            $files[] = $path;
+        }
+    }
+
+    return $files;
+}
+
+/**
+ * HARD DELETE — menghapus baris sparepart secara permanen dari database.
+ * Karena tabel sparepart_foto_tambahan dan barcode_print_history punya
+ * FOREIGN KEY ... ON DELETE CASCADE ke spareparts.id, baris terkait di
+ * kedua tabel tersebut ikut terhapus otomatis oleh MySQL/MariaDB.
+ *
+ * PENTING: fungsi ini TIDAK menghapus file foto fisik — panggil
+ * sparepart_get_all_photo_filenames() DULU sebelum memanggil fungsi ini,
+ * lalu hapus file-nya sendiri (lihat modules/sparepart/delete.php).
+ */
+function sparepart_hard_delete(PDO $pdo, int $id): void
+{
+    $stmt = $pdo->prepare('DELETE FROM spareparts WHERE id = ?');
+    $stmt->execute([$id]);
+}
+
 function sparepart_print_history_add(PDO $pdo, int $sparepartId, string $kode, string $nama, int $jumlah, string $printedBy): void
 {
     $stmt = $pdo->prepare(
