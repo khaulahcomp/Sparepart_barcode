@@ -13,10 +13,16 @@ $kategori   = trim($_GET['kategori'] ?? '');
 $stokFilter = trim($_GET['stok_filter'] ?? '');
 $page       = max(1, (int)($_GET['page'] ?? 1));
 
+$allowedPerPage = [12, 24, 48, 96];
+$perPage = (int)($_GET['per_page'] ?? 24);
+if (!in_array($perPage, $allowedPerPage, true)) {
+    $perPage = 24;
+}
+
 $result = sparepart_list($pdo, [
     'q' => $q, 'merk' => $merk, 'jenis_motor' => $jenisMotor,
     'kategori' => $kategori, 'stok_filter' => $stokFilter,
-    'page' => $page, 'per_page' => 24,
+    'page' => $page, 'per_page' => $perPage,
 ]);
 
 $merkList   = sparepart_distinct_values($pdo, 'merk');
@@ -31,7 +37,10 @@ function build_query(array $override = []): string
 ?>
 <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
   <h4 class="mb-0"><i class="bi bi-grid-3x3-gap"></i> Katalog Sparepart Lokal</h4>
-  <div>
+  <div class="d-flex gap-2">
+    <a href="<?= base_url('modules/excel/export.php?' . build_query(['page' => null])) ?>" class="btn btn-outline-success">
+      <i class="bi bi-file-earmark-excel"></i> Export Excel (sesuai filter)
+    </a>
     <a href="<?= base_url('modules/sparepart/form.php') ?>" class="btn btn-primary"><i class="bi bi-plus-circle"></i> Tambah Sparepart</a>
   </div>
 </div>
@@ -71,6 +80,13 @@ function build_query(array $override = []): string
         <option value="tersedia" <?= $stokFilter === 'tersedia' ? 'selected' : '' ?>>Tersedia</option>
         <option value="menipis" <?= $stokFilter === 'menipis' ? 'selected' : '' ?>>Menipis</option>
         <option value="habis" <?= $stokFilter === 'habis' ? 'selected' : '' ?>>Habis</option>
+      </select>
+    </div>
+    <div class="col-md-1">
+      <select name="per_page" class="form-select" onchange="this.form.submit()">
+        <?php foreach ($allowedPerPage as $pp): ?>
+          <option value="<?= $pp ?>" <?= $perPage === $pp ? 'selected' : '' ?>><?= $pp ?>/hal</option>
+        <?php endforeach; ?>
       </select>
     </div>
     <div class="col-md-1">
@@ -119,15 +135,44 @@ function build_query(array $override = []): string
   <?php endif; ?>
 </div>
 
-<?php if ($result['totalPages'] > 1): ?>
-<nav class="mt-4">
-  <ul class="pagination justify-content-center">
-    <?php for ($p = 1; $p <= $result['totalPages']; $p++): ?>
-      <li class="page-item <?= $p === $result['page'] ? 'active' : '' ?>">
+<?php if ($result['totalPages'] > 1):
+  $totalPages = $result['totalPages'];
+  $curPage    = $result['page'];
+  $windowSize = 2; // tampil 2 halaman di kiri & kanan halaman aktif
+  $start = max(1, $curPage - $windowSize);
+  $end   = min($totalPages, $curPage + $windowSize);
+?>
+<nav class="mt-4 no-print">
+  <ul class="pagination justify-content-center flex-wrap">
+    <li class="page-item <?= $curPage <= 1 ? 'disabled' : '' ?>">
+      <a class="page-link" href="?<?= build_query(['page' => max(1, $curPage - 1)]) ?>">&laquo; Prev</a>
+    </li>
+
+    <?php if ($start > 1): ?>
+      <li class="page-item"><a class="page-link" href="?<?= build_query(['page' => 1]) ?>">1</a></li>
+      <?php if ($start > 2): ?>
+        <li class="page-item disabled"><span class="page-link">&hellip;</span></li>
+      <?php endif; ?>
+    <?php endif; ?>
+
+    <?php for ($p = $start; $p <= $end; $p++): ?>
+      <li class="page-item <?= $p === $curPage ? 'active' : '' ?>">
         <a class="page-link" href="?<?= build_query(['page' => $p]) ?>"><?= $p ?></a>
       </li>
     <?php endfor; ?>
+
+    <?php if ($end < $totalPages): ?>
+      <?php if ($end < $totalPages - 1): ?>
+        <li class="page-item disabled"><span class="page-link">&hellip;</span></li>
+      <?php endif; ?>
+      <li class="page-item"><a class="page-link" href="?<?= build_query(['page' => $totalPages]) ?>"><?= $totalPages ?></a></li>
+    <?php endif; ?>
+
+    <li class="page-item <?= $curPage >= $totalPages ? 'disabled' : '' ?>">
+      <a class="page-link" href="?<?= build_query(['page' => min($totalPages, $curPage + 1)]) ?>">Next &raquo;</a>
+    </li>
   </ul>
+  <p class="text-center text-muted small">Halaman <?= $curPage ?> dari <?= $totalPages ?> (<?= (int)$result['total'] ?> total sparepart)</p>
 </nav>
 <?php endif; ?>
 
