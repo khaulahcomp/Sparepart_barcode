@@ -71,6 +71,40 @@ body { background:#f4f6f9; }
 .label-30x20 { width:30mm; height:20mm; }
 .label-40x25 { width:40mm; height:25mm; }
 .label-50x30 { width:50mm; height:30mm; }
+.label-32x19 { width:32mm; height:19mm; }
+
+/* ============ SHEET PRESISI: Kertas Stiker Label HVS Doff A4 ============
+   Produk: BLUEPRINT GL-A44, 32 x 19 mm, 84 label/lembar (6 kolom x 14 baris).
+   Ukuran ini HARUS presisi grid (bukan flex-wrap biasa) karena stiker sudah
+   dipotong (die-cut) permanen di pabrik — kalau meleset, barcode akan
+   tercetak di celah antar-stiker, bukan di atas stikernya.
+
+   Margin di bawah adalah HASIL PERHITUNGAN dari ukuran kertas A4 (210x297mm):
+     - 6 kolom x 32mm = 192mm  -> sisa 18mm -> margin kiri/kanan 9mm, tanpa gap antar kolom
+     - 14 baris x 19mm = 266mm -> sisa 31mm -> margin atas/bawah 15.5mm, tanpa gap antar baris
+   Kalau hasil print di printer Anda meleset beberapa mm, cukup ubah 4 angka
+   (--m-top/--m-left) di bawah ini lalu cetak ulang satu lembar untuk kalibrasi.
+   ========================================================================= */
+.label-sheet.sheet-32x19 {
+  --m-top: 15.5mm;
+  --m-left: 9mm;
+  display: grid;
+  grid-template-columns: repeat(6, 32mm);
+  grid-auto-rows: 19mm;
+  gap: 0mm;
+  width: 210mm;
+  padding: var(--m-top) var(--m-left);
+  box-sizing: border-box;
+}
+.label-sheet.sheet-32x19 .barcode-label {
+  border: 1px dashed #ced4da; /* hanya bantuan visual di layar */
+  padding: 1mm;
+}
+@media print {
+  /* Di kertas stiker yang sudah dipotong pabrik, garis label TIDAK dicetak
+     supaya tidak ada tinta di pinggir stiker. */
+  .label-sheet.sheet-32x19 .barcode-label { border-color: transparent !important; }
+}
 
 /* ============ PRINT ============ */
 @media print {
@@ -78,6 +112,8 @@ body { background:#f4f6f9; }
   body { background:#fff !important; }
   .container-fluid { padding:0 !important; margin:0 !important; max-width:none !important; }
   .print-page { margin:0; padding:0; }
+  .label-sheet { padding: 8mm; box-sizing: border-box; } /* setara margin lama, sekarang lewat padding bukan @page */
+  .label-sheet.sheet-32x19 { padding: var(--m-top) var(--m-left); } /* sheet presisi pakai margin sendiri */
   .barcode-label { border-color:#000 !important; }
-  @page { margin: 8mm; }
+  @page { size: A4; margin: 0; }
 }

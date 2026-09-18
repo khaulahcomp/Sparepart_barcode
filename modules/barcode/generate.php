@@ -61,6 +61,7 @@ $pageTitle = 'Generator Barcode';
             <option value="30x20" <?= $labelSize === '30x20' ? 'selected' : '' ?>>30 x 20 mm</option>
             <option value="40x25" <?= $labelSize === '40x25' ? 'selected' : '' ?>>40 x 25 mm</option>
             <option value="50x30" <?= $labelSize === '50x30' ? 'selected' : '' ?>>50 x 30 mm</option>
+            <option value="32x19" <?= $labelSize === '32x19' ? 'selected' : '' ?>>32 x 19 mm — Stiker HVS Doff A4 (84 label/lembar)</option>
           </select>
         </div>
         <div class="col-md-4 d-flex align-items-end">
@@ -81,8 +82,15 @@ $pageTitle = 'Generator Barcode';
   </div>
 </div>
 
+
+<?php if ($labelSize === '32x19'): ?>
+<p class="text-muted small no-print mb-2"><i class="bi bi-info-circle"></i> Mode presisi 84 label/lembar A4 aktif — gunakan kertas stiker HVS Doff A4 32x19mm (mis. BLUEPRINT GL-A44) dan pastikan pengaturan printer "Scale: 100% / Actual size" (jangan "Fit to page") saat mencetak.</p>
+  <?php if ($jumlah > 84): ?>
+  <p class="text-warning small no-print mb-2"><i class="bi bi-exclamation-triangle"></i> Jumlah (<?= $jumlah ?>) lebih dari 84 (kapasitas 1 lembar fisik). Grid di lembar ke-2 dst berisiko bergeser saat dicetak lintas-halaman. Disarankan cetak bertahap maks. 84 label per lembar untuk hasil paling presisi.</p>
+  <?php endif; ?>
+<?php endif; ?>
 <div class="print-page">
-  <div class="label-sheet">
+  <div class="label-sheet<?= $labelSize === '32x19' ? ' sheet-32x19' : '' ?>">
     <?php for ($i = 0; $i < $jumlah; $i++): ?>
       <div class="barcode-label label-<?= e($labelSize) ?>">
         <?= Barcode128::renderSVG($sp['kode_custom'], 2, 55, true, 8) ?>
