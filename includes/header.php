@@ -34,6 +34,7 @@ $appNameDisplay = app_name(get_pdo());
         <li class="nav-item"><a class="nav-link" href="<?= base_url('modules/sparepart/form.php') ?>"><i class="bi bi-plus-circle"></i> Tambah Sparepart</a></li>
         <li class="nav-item"><a class="nav-link" href="<?= base_url('modules/scan/scan.php') ?>"><i class="bi bi-upc"></i> Scan Barcode</a></li>
         <li class="nav-item"><a class="nav-link" href="<?= base_url('modules/barcode/bulk_print.php') ?>"><i class="bi bi-printer"></i> Cetak Massal</a></li>
+        <li class="nav-item"><a class="nav-link" href="<?= base_url('modules/barcode/print_a4_label.php') ?>"><i class="bi bi-grid-3x2"></i> Cetak Label A4</a></li>
         <li class="nav-item"><a class="nav-link" href="<?= base_url('modules/barcode/history.php') ?>"><i class="bi bi-clock-history"></i> Riwayat Cetak</a></li>
         <li class="nav-item"><a class="nav-link" href="<?= base_url('modules/excel/import.php') ?>"><i class="bi bi-file-earmark-excel"></i> Import/Export</a></li>
         <?php if ($user['role'] === 'admin'): ?>
