@@ -4,14 +4,16 @@ if (session_status() === PHP_SESSION_NONE) session_start();
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/functions.php';
 require_once __DIR__ . '/auth.php';
+require_once __DIR__ . '/settings.php';
 $user = current_user();
+$appNameDisplay = app_name(get_pdo());
 ?>
 <!DOCTYPE html>
 <html lang="id">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title><?= e(APP_NAME) ?><?= isset($pageTitle) ? ' - ' . e($pageTitle) : '' ?></title>
+<title><?= e($appNameDisplay) ?><?= isset($pageTitle) ? ' - ' . e($pageTitle) : '' ?></title>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.1/font/bootstrap-icons.min.css" rel="stylesheet">
 <link href="<?= base_url('assets/css/custom.css') ?>" rel="stylesheet">
@@ -21,7 +23,7 @@ $user = current_user();
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark no-print sticky-top">
   <div class="container-fluid">
     <a class="navbar-brand" href="<?= base_url('modules/sparepart/list.php') ?>">
-      <i class="bi bi-upc-scan"></i> <?= e(APP_NAME) ?>
+      <i class="bi bi-upc-scan"></i> <?= e($appNameDisplay) ?>
     </a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMain">
       <span class="navbar-toggler-icon"></span>
@@ -34,6 +36,9 @@ $user = current_user();
         <li class="nav-item"><a class="nav-link" href="<?= base_url('modules/barcode/bulk_print.php') ?>"><i class="bi bi-printer"></i> Cetak Massal</a></li>
         <li class="nav-item"><a class="nav-link" href="<?= base_url('modules/barcode/history.php') ?>"><i class="bi bi-clock-history"></i> Riwayat Cetak</a></li>
         <li class="nav-item"><a class="nav-link" href="<?= base_url('modules/excel/import.php') ?>"><i class="bi bi-file-earmark-excel"></i> Import/Export</a></li>
+        <?php if ($user['role'] === 'admin'): ?>
+        <li class="nav-item"><a class="nav-link" href="<?= base_url('modules/settings/general.php') ?>"><i class="bi bi-gear"></i> Pengaturan</a></li>
+        <?php endif; ?>
       </ul>
       <span class="navbar-text text-light me-3">
         <i class="bi bi-person-circle"></i> <?= e($user['nama_lengkap']) ?> (<?= e($user['role']) ?>)
