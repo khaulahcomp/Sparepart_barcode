@@ -9,19 +9,23 @@ $pdo = get_pdo();
 $q = trim($_GET['q'] ?? '');
 
 /**
- * Kalibrasi grid untuk lembar stiker A4 pre-cut (mis. label barcode 32x19mm
- * yang dijual di marketplace). Nilai default di bawah adalah TEBAKAN AWAL saja
- * (6 kolom x 15 baris, tanpa jarak antar label) — WAJIB dicek dulu dengan
- * "Cetak Grid Uji" di kertas HVS biasa, ukur pakai penggaris, lalu sesuaikan
- * angkanya sebelum cetak ke lembar stiker asli. Nilai tersimpan otomatis
- * untuk pencetakan berikutnya.
+ * Kalibrasi grid untuk lembar stiker A4 pre-cut Blueprint GL-A44 (32x19mm,
+ * 84 label/lembar HVS doff — produk yang sama juga umum dijual ulang di
+ * marketplace dengan nama lain). 6 kolom x 14 baris = 84 dihitung dari
+ * lebar label 32mm (7 kolom sudah tidak muat di lebar A4 210mm) dan jumlah
+ * 84 label/lembar sesuai kemasan produk.
+ * Margin/jarak di bawah tetap TEBAKAN (dibagi rata dari sisa ruang kosong,
+ * bukan dari spek resmi pabrik) — WAJIB dicek dulu dengan "Cetak Grid Uji"
+ * di kertas HVS biasa, terawang ke lembar stiker asli, lalu sesuaikan
+ * angkanya sebelum cetak sungguhan. Nilai tersimpan otomatis untuk
+ * pencetakan berikutnya.
  */
 $calibDefaults = [
     'cols'        => 6,
-    'rows'        => 15,
+    'rows'        => 14,
     'label_w'     => 32,
     'label_h'     => 19,
-    'margin_top'  => 6,
+    'margin_top'  => 15.5,
     'margin_left' => 9,
     'gap_x'       => 0,
     'gap_y'       => 0,
@@ -102,19 +106,20 @@ $pageTitle = 'Cetak Label A4 (Stiker Sheet)';
 
 <h4><i class="bi bi-grid-3x2"></i> Cetak Label A4 (Lembar Stiker Pre-Cut)</h4>
 <p class="text-muted">
-  Untuk mencetak barcode langsung ke lembar stiker A4 (mis. label 32x19mm, HVS doff, yang sudah ada garis potongnya)
-  memakai printer biasa (contoh: Epson L-series). Posisi tiap label mengikuti kalibrasi di bawah, jadi harus dicek dulu
-  sebelum cetak ke lembar stiker asli.
+  Untuk mencetak barcode langsung ke lembar stiker A4 32x19mm HVS doff (mis. Blueprint GL-A44, 84 label/lembar) yang
+  sudah ada garis potongnya, memakai printer biasa (contoh: Epson L-series). Posisi tiap label mengikuti kalibrasi di
+  bawah, jadi harus dicek dulu sebelum cetak ke lembar stiker asli.
 </p>
 
 <div class="card shadow-sm mb-4">
   <div class="card-body">
     <h6><i class="bi bi-rulers"></i> Kalibrasi Grid Label</h6>
     <p class="text-muted small mb-3">
-      Nilai di bawah adalah perkiraan awal untuk lembar 32x19mm. Karena ukuran/jarak persis bisa berbeda tergantung
-      merek stiker yang Anda beli, <strong>klik "Cetak Grid Uji" dulu</strong> di kertas HVS biasa (bukan stiker),
-      tumpuk hasilnya di atas lembar stiker asli sambil diterawang ke cahaya untuk mengecek posisi, lalu sesuaikan
-      angka di bawah sampai pas. Nilai otomatis tersimpan untuk cetak berikutnya.
+      Default di bawah sudah disetel untuk 84 label/lembar (6 kolom x 14 baris, 32x19mm) sesuai kemasan Blueprint
+      GL-A44. Tapi jarak/margin persisnya masih perkiraan (dibagi rata), bukan angka resmi pabrik — jadi
+      <strong>klik "Cetak Grid Uji" dulu</strong> di kertas HVS biasa (bukan stiker), tumpuk hasilnya di atas lembar
+      stiker asli sambil diterawang ke cahaya untuk mengecek posisi, lalu sesuaikan angka di bawah sampai pas. Nilai
+      otomatis tersimpan untuk cetak berikutnya.
     </p>
     <form method="post" id="formLabelA4">
       <?= csrf_field() ?>
