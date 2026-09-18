@@ -87,6 +87,17 @@ CREATE TABLE IF NOT EXISTS `barcode_print_history` (
   CONSTRAINT `fk_history_sparepart` FOREIGN KEY (`sparepart_id`) REFERENCES `spareparts`(`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- ---------------------------------------------------------
+-- Tabel: settings (key-value store)
+-- Dipakai oleh: Pengaturan Umum (nama aplikasi) & Cetak Label A4 (kalibrasi grid label).
+-- ---------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `settings` (
+  `setting_key`   VARCHAR(100) NOT NULL,
+  `setting_value` TEXT DEFAULT NULL,
+  `updated_at`    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`setting_key`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 SET FOREIGN_KEY_CHECKS = 1;
 
 -- ---------------------------------------------------------

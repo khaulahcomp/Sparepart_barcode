@@ -81,3 +81,56 @@ body { background:#f4f6f9; }
   .barcode-label { border-color:#000 !important; }
   @page { margin: 8mm; }
 }
+
+/* ============ LABEL A4 (lembar stiker pre-cut, mis. 32x19mm) ============ */
+.a4-sheet {
+  position: relative;
+  width: 210mm;
+  height: 297mm;
+  background: #fff;
+  overflow: hidden;
+  margin: 0 auto 8mm;
+  box-shadow: 0 0 0 1px #e3e6ea;
+}
+.a4-label {
+  position: absolute;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1mm;
+  overflow: hidden;
+  border: 1px dashed #ced4da;
+}
+.a4-label svg { width: 100%; height: auto; max-height: 75%; }
+.a4-label__nama {
+  font-size: 2.1mm;
+  text-align: center;
+  line-height: 1.05;
+  margin-top: .5mm;
+  max-width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.a4-label__no {
+  font-size: 3mm;
+  color: #adb5bd;
+}
+
+@media print {
+  .a4-sheet {
+    margin: 0;
+    box-shadow: none;
+    page: a4label;
+    page-break-after: always;
+    break-after: page;
+  }
+  .a4-sheet:last-child { page-break-after: auto; break-after: auto; }
+  .a4-label { border-color:#000 !important; }
+}
+@page a4label {
+  size: A4;
+  margin: 0;
+}
