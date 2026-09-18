@@ -36,6 +36,18 @@ function is_valid_kode_custom(string $kode): bool
     return (bool) preg_match('/^[A-Za-z0-9_\-]{2,50}$/', $kode);
 }
 
+function is_valid_username(string $username): bool
+{
+    // Huruf, angka, titik, underscore. 3-50 karakter. Tidak boleh spasi.
+    return (bool) preg_match('/^[A-Za-z0-9_.]{3,50}$/', $username);
+}
+
+function is_valid_password(string $password): bool
+{
+    // Batas minimal saja (bukan aturan kompleksitas) - cukup untuk tool internal.
+    return mb_strlen($password) >= 6;
+}
+
 /**
  * Validasi & simpan upload foto sparepart.
  * Mengembalikan nama file relatif (di dalam uploads/sparepart/) atau null jika tidak ada file.

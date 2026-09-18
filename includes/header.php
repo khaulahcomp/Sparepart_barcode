@@ -36,9 +36,17 @@ $appNameDisplay = app_name(get_pdo());
         <li class="nav-item"><a class="nav-link" href="<?= base_url('modules/barcode/bulk_print.php') ?>"><i class="bi bi-printer"></i> Cetak Massal</a></li>
         <li class="nav-item"><a class="nav-link" href="<?= base_url('modules/barcode/history.php') ?>"><i class="bi bi-clock-history"></i> Riwayat Cetak</a></li>
         <li class="nav-item"><a class="nav-link" href="<?= base_url('modules/excel/import.php') ?>"><i class="bi bi-file-earmark-excel"></i> Import/Export</a></li>
-        <?php if ($user['role'] === 'admin'): ?>
-        <li class="nav-item"><a class="nav-link" href="<?= base_url('modules/settings/general.php') ?>"><i class="bi bi-gear"></i> Pengaturan</a></li>
-        <?php endif; ?>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi bi-gear"></i> Pengaturan</a>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li><a class="dropdown-item" href="<?= base_url('modules/settings/profile.php') ?>"><i class="bi bi-person-circle"></i> Profil Saya (Username &amp; Password)</a></li>
+            <?php if ($user['role'] === 'admin'): ?>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" href="<?= base_url('modules/settings/users.php') ?>"><i class="bi bi-people"></i> Kelola Pengguna</a></li>
+            <li><a class="dropdown-item" href="<?= base_url('modules/settings/general.php') ?>"><i class="bi bi-sliders"></i> Pengaturan Umum</a></li>
+            <?php endif; ?>
+          </ul>
+        </li>
       </ul>
       <span class="navbar-text text-light me-3">
         <i class="bi bi-person-circle"></i> <?= e($user['nama_lengkap']) ?> (<?= e($user['role']) ?>)
