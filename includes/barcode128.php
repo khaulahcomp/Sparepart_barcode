@@ -159,4 +159,69 @@ final class Barcode128
             $textEl
         );
     }
+
+    /**
+     * === PERBAIKAN BUG: barcode tidak terbaca USB scanner ===
+     *
+     * Akar masalah: renderSVG() dipakai dengan moduleW tetap (2px), lalu di halaman cetak
+     * SVG-nya dipaksa CSS "width:100%" mengikuti ukuran fisik label (30-50mm). Untuk
+     * kode_custom yang agak panjang (mis. "JL-BEAT-KR-001"), lebar barcode alami bisa >100mm,
+     * sehingga saat dipepetkan ke label 30-50mm, lebar 1 modul (bar tertipis) yang tercetak
+     * jadi < 0.25mm — di bawah ambang minimum yang bisa dikenali scanner laser 1D (termasuk
+     * scanner BS-1808 tipe genggam), sehingga barcode gagal ter-scan meski tercetak jelas.
+     *
+     * Fungsi ini TIDAK mengubah logika encode()/tabel/checksum sama sekali (semua itu sudah
+     * benar dan tetap dipakai apa adanya via renderSVG()). Ia hanya MEMILIH moduleW yang pas
+     * agar lebar barcode alami sudah sefisik mungkin muat di label, dengan lebar modul minimum
+     * yang dijamin tetap terbaca scanner. Kalau kode terlalu panjang untuk label yang dipilih,
+     * moduleW TIDAK diturunkan lagi di bawah batas aman itu — barcode boleh sedikit melebihi
+     * kotak label (lebih baik terbaca scanner walau agak lebar, daripada rapi tapi tak terbaca).
+     *
+     * @param string $code          Teks kode_custom yang akan di-encode
+     * @param float  $targetWidthMM Lebar area cetak yang tersedia untuk barcode, dalam mm
+     *                               (lebar label dikurangi padding kiri-kanan)
+     * @param int    $height        Tinggi batang barcode dalam px (sama seperti renderSVG)
+     * @param bool   $showText      Tampilkan teks kode di bawah barcode
+     * @param int    $quietZone     Margin kiri-kanan (quiet zone) dalam modul
+     * @param int    $minModuleW    Lebar modul minimum dalam px yang dijamin (1px ≈ 0.26mm,
+     *                               ambang X-dimension standar industri untuk scanner laser 1D
+     *                               umum/retail; jangan diturunkan lagi di bawah ini)
+     * @return array{svg:string, fits:bool} 'svg' = markup SVG siap pakai, 'fits' = false kalau
+     *                               kode ternyata lebih lebar dari label (butuh label lebih besar)
+     */
+    public static function renderSVGFit(
+        string $code,
+        float $targetWidthMM,
+        int $height = 55,
+        bool $showText = true,
+        int $quietZone = 10,
+        int $minModuleW = 1
+    ): array {
+        // Ukur total lebar barcode dalam satuan "modul" memakai renderSVG yang sudah ada
+        // (moduleW=1 sehingga viewBox width = total lebar dalam modul), tanpa duplikasi logika.
+        $probeSvg = self::renderSVG($code, 1, $height, false, $quietZone);
+        $totalModuleUnits = 0;
+        if (preg_match('/viewBox="0 0 (\d+) /', $probeSvg, $m)) {
+            $totalModuleUnits = (int)$m[1];
+        }
+
+        $pxPerMM = 96 / 25.4; // 1 CSS px = 1/96 inch, standar konversi px<->mm saat cetak
+        $targetWidthPx = $targetWidthMM * $pxPerMM;
+
+        $moduleW = $minModuleW;
+        $fits = true;
+        if ($totalModuleUnits > 0) {
+            $fitModuleW = (int) floor($targetWidthPx / $totalModuleUnits);
+            if ($fitModuleW >= $minModuleW) {
+                $moduleW = $fitModuleW; // kode cukup pendek, boleh pakai modul lebih lebar & tajam
+            } else {
+                $fits = false; // kode terlalu panjang utk label ini walau sudah pakai modul minimum
+            }
+        }
+
+        return [
+            'svg'  => self::renderSVG($code, $moduleW, $height, $showText, $quietZone),
+            'fits' => $fits,
+        ];
+    }
 }

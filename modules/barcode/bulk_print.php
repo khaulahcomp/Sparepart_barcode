@@ -35,6 +35,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
+// Lebar area cetak barcode per ukuran label (mm label dikurangi padding kiri-kanan)
+$labelContentWidthMM = [
+    '30x20' => 30 - 4,
+    '40x25' => 40 - 4,
+    '50x30' => 50 - 4,
+    '32x19' => 32 - 2,
+];
+
 // Data untuk form pemilihan (hanya perlu jika belum print)
 $list = [];
 if (!$didPrint) {
@@ -113,16 +121,26 @@ $pageTitle = 'Cetak Massal Barcode';
   <?php endif; ?>
   <div class="print-page">
     <div class="label-sheet<?= ($labelSize ?? '') === '32x19' ? ' sheet-32x19' : '' ?>">
-      <?php foreach ($printItems as $item):
+      <?php
+      $notFittingCodes = [];
+      $bulkTargetWidthMM = $labelContentWidthMM[$labelSize ?? '40x25'] ?? (40 - 4);
+      foreach ($printItems as $item):
         $sp = $item['sp'];
+        $barcodeResult = Barcode128::renderSVGFit($sp['kode_custom'], $bulkTargetWidthMM, 55, true, 10);
+        if (!$barcodeResult['fits']) {
+            $notFittingCodes[$sp['kode_custom']] = true;
+        }
         for ($i = 0; $i < $item['jumlah']; $i++): ?>
         <div class="barcode-label label-<?= e($labelSize ?? '40x25') ?>">
-          <?= Barcode128::renderSVG($sp['kode_custom'], 2, 55, true, 8) ?>
+          <?= $barcodeResult['svg'] ?>
           <?php if (strlen($sp['nama_sparepart']) <= 28): ?>
             <div class="lbl-nama"><?= e($sp['nama_sparepart']) ?></div>
           <?php endif; ?>
         </div>
       <?php endfor; endforeach; ?>
+      <?php if (!empty($notFittingCodes)): ?>
+      <p class="text-warning small no-print mb-2 mt-2"><i class="bi bi-exclamation-triangle"></i> Kode berikut cukup panjang sehingga barcode sedikit melebihi kotak label agar tetap bisa dipindai scanner: <code><?= e(implode(', ', array_keys($notFittingCodes))) ?></code>. Untuk hasil paling rapi, pilih ukuran label yang lebih besar.</p>
+      <?php endif; ?>
     </div>
   </div>
 <?php endif; ?>

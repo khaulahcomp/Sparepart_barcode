@@ -54,9 +54,17 @@ body { background:#f4f6f9; }
   box-sizing:border-box;
   page-break-inside: avoid;
   break-inside: avoid;
-  overflow:hidden;
+  /* FIX bug barcode tidak terbaca scanner: dulu overflow:hidden + svg width:100% memaksa
+     barcode dipepetkan/terpotong mengikuti kotak label sekecil apapun, sehingga lebar
+     bar tercetak bisa jadi < 0.25mm (di bawah ambang minimum scanner laser 1D) untuk
+     kode_custom yang agak panjang. Sekarang lebar modul sudah dihitung pas oleh PHP
+     (Barcode128::renderSVGFit), jadi svg dibiarkan tampil di ukuran aslinya (tidak
+     dipepetkan lagi) - overflow:visible supaya kalau ada kode yang tetap lebih lebar
+     dari kotak label, barcode-nya tetap utuh & terbaca (tidak terpotong), meski
+     sedikit melebihi garis putus-putus label. */
+  overflow:visible;
 }
-.barcode-label svg { width:100%; height:auto; max-height:80%; }
+.barcode-label svg { width:auto; height:auto; max-width:none; max-height:none; }
 .barcode-label .lbl-nama {
   font-size: 2.4mm;
   text-align:center;

@@ -18,6 +18,16 @@ $labelSize = $_GET['label_size'] ?? '40x25';
 $autoPrint = !empty($_GET['auto_print']);
 $maxCetakSekali = 500; // batas wajar sekali generate agar browser tidak berat
 
+// Lebar area cetak barcode per ukuran label (mm label dikurangi padding kiri-kanan 2mm x2 = 4mm)
+$labelContentWidthMM = [
+    '30x20' => 30 - 4,
+    '40x25' => 40 - 4,
+    '50x30' => 50 - 4,
+    '32x19' => 32 - 2, // padding sheet 32x19 hanya 1mm per sisi
+];
+$barcodeTargetWidthMM = $labelContentWidthMM[$labelSize] ?? (40 - 4);
+$barcodeFitsLabel = true; // diisi ulang saat render di bawah
+
 $didGenerate = $jumlah > 0;
 
 if ($didGenerate) {
@@ -91,14 +101,20 @@ $pageTitle = 'Generator Barcode';
 <?php endif; ?>
 <div class="print-page">
   <div class="label-sheet<?= $labelSize === '32x19' ? ' sheet-32x19' : '' ?>">
-    <?php for ($i = 0; $i < $jumlah; $i++): ?>
+    <?php
+    $barcodeResult   = Barcode128::renderSVGFit($sp['kode_custom'], $barcodeTargetWidthMM, 55, true, 10);
+    $barcodeFitsLabel = $barcodeResult['fits'];
+    for ($i = 0; $i < $jumlah; $i++): ?>
       <div class="barcode-label label-<?= e($labelSize) ?>">
-        <?= Barcode128::renderSVG($sp['kode_custom'], 2, 55, true, 8) ?>
+        <?= $barcodeResult['svg'] ?>
         <?php if (strlen($sp['nama_sparepart']) <= 28): ?>
           <div class="lbl-nama"><?= e($sp['nama_sparepart']) ?></div>
         <?php endif; ?>
       </div>
     <?php endfor; ?>
+    <?php if (!$barcodeFitsLabel): ?>
+    <p class="text-warning small no-print mb-2 mt-2"><i class="bi bi-exclamation-triangle"></i> Kode <code><?= e($sp['kode_custom']) ?></code> cukup panjang sehingga barcode sedikit melebihi kotak label <?= e($labelSize) ?> mm agar tetap bisa dipindai scanner. Untuk hasil paling rapi, pilih ukuran label yang lebih besar.</p>
+    <?php endif; ?>
   </div>
 </div>
 
