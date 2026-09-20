@@ -44,6 +44,7 @@ $appNameDisplay = app_name(get_pdo());
             <li><hr class="dropdown-divider"></li>
             <li><a class="dropdown-item" href="<?= base_url('modules/settings/users.php') ?>"><i class="bi bi-people"></i> Kelola Pengguna</a></li>
             <li><a class="dropdown-item" href="<?= base_url('modules/settings/general.php') ?>"><i class="bi bi-sliders"></i> Pengaturan Umum</a></li>
+            <li><a class="dropdown-item" href="<?= base_url('modules/settings/print_calibration.php') ?>"><i class="bi bi-rulers"></i> Kalibrasi Cetak Label</a></li>
             <?php endif; ?>
           </ul>
         </li>

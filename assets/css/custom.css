@@ -82,24 +82,30 @@ body { background:#f4f6f9; }
 .label-32x19 { width:32mm; height:19mm; }
 
 /* ============ SHEET PRESISI: Kertas Stiker Label HVS Doff A4 ============
-   Produk: BLUEPRINT GL-A44, 32 x 19 mm, 84 label/lembar (6 kolom x 14 baris).
+   Produk: BLUEPRINT GL-A14, 32 x 19 mm, 84 label/lembar (6 kolom x 14 baris).
    Ukuran ini HARUS presisi grid (bukan flex-wrap biasa) karena stiker sudah
    dipotong (die-cut) permanen di pabrik — kalau meleset, barcode akan
    tercetak di celah antar-stiker, bukan di atas stikernya.
 
-   Margin di bawah adalah HASIL PERHITUNGAN dari ukuran kertas A4 (210x297mm):
-     - 6 kolom x 32mm = 192mm  -> sisa 18mm -> margin kiri/kanan 9mm, tanpa gap antar kolom
-     - 14 baris x 19mm = 266mm -> sisa 31mm -> margin atas/bawah 15.5mm, tanpa gap antar baris
-   Kalau hasil print di printer Anda meleset beberapa mm, cukup ubah 4 angka
-   (--m-top/--m-left) di bawah ini lalu cetak ulang satu lembar untuk kalibrasi.
+   BUGFIX kecocokan cetak: nilai margin/gap di bawah ini dulu HARDCODE hasil
+   perhitungan simetris (15.5mm/9mm), padahal banyak kertas stiker fisik
+   labelnya mepet sampai ke tepi kertas TANPA jarak sama sekali. Default di
+   bawah sekarang 0mm (mepet penuh), dan nilai aktualnya SELALU ditimpa oleh
+   inline <style> dari modules/barcode/bulk_print.php yang mengambil angka
+   dari Pengaturan > Kalibrasi Cetak Label (tabel settings), bukan lagi dari
+   file CSS ini. Ubah kalibrasi lewat halaman itu, JANGAN edit angka di sini
+   — 0mm di sini hanya fallback kalau setting belum pernah disimpan.
    ========================================================================= */
 .label-sheet.sheet-32x19 {
-  --m-top: 15.5mm;
-  --m-left: 9mm;
+  --m-top: 0mm;
+  --m-left: 0mm;
+  --gap-x: 0mm;
+  --gap-y: 0mm;
   display: grid;
   grid-template-columns: repeat(6, 32mm);
   grid-auto-rows: 19mm;
-  gap: 0mm;
+  column-gap: var(--gap-x);
+  row-gap: var(--gap-y);
   width: 210mm;
   padding: var(--m-top) var(--m-left);
   box-sizing: border-box;

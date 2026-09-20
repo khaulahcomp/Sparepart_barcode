@@ -6,6 +6,21 @@ require_once __DIR__ . '/../../includes/barcode128.php';
 require_login();
 
 $pdo = get_pdo();
+
+/**
+ * BUGFIX kecocokan cetak label 32x19mm (84 label/lembar):
+ * Margin grid dulu hardcode di assets/css/custom.css (15.5mm/9mm) hasil
+ * hitungan simetris, padahal tidak semua kertas stiker fisik punya margin
+ * simetris itu (mis. kertas yang label-nya mepet sampai ke tepi kertas,
+ * tanpa jarak atas/bawah/kiri/kanan). Sekarang nilainya diambil dari
+ * Pengaturan > Kalibrasi Cetak Label (default 0mm) dan disuntikkan sebagai
+ * inline CSS di bawah, jadi override nilai default di custom.css tanpa
+ * perlu edit file CSS setiap ganti batch/merk kertas.
+ */
+$calMarginTop = (float) setting_get($pdo, 'print_cal_32x19_margin_top', '0');
+$calMarginLeft = (float) setting_get($pdo, 'print_cal_32x19_margin_left', '0');
+$calGapX = (float) setting_get($pdo, 'print_cal_32x19_gap_x', '0');
+$calGapY = (float) setting_get($pdo, 'print_cal_32x19_gap_y', '0');
 $q = trim($_GET['q'] ?? '');
 
 $didPrint = false;
@@ -114,10 +129,21 @@ $pageTitle = 'Cetak Massal Barcode';
   </div>
   <?php if (($labelSize ?? '') === '32x19'):
     $totalLabelSheet = array_sum(array_column($printItems, 'jumlah')); ?>
-  <p class="text-muted small no-print mb-2"><i class="bi bi-info-circle"></i> Mode presisi 84 label/lembar A4 aktif — gunakan kertas stiker HVS Doff A4 32x19mm (mis. BLUEPRINT GL-A44) dan pastikan pengaturan printer "Scale: 100% / Actual size" (jangan "Fit to page") saat mencetak.</p>
+  <p class="text-muted small no-print mb-2"><i class="bi bi-info-circle"></i> Mode presisi 84 label/lembar A4 aktif — gunakan kertas stiker HVS Doff A4 32x19mm (mis. BLUEPRINT GL-A14) dan pastikan pengaturan printer "Margins: None" serta "Scale: 100% / Actual size" (jangan "Fit to page") saat mencetak. Jika posisi barcode masih meleset dari label, sesuaikan di <a href="<?= base_url('modules/settings/print_calibration.php') ?>" target="_blank">Pengaturan &raquo; Kalibrasi Cetak Label</a>.</p>
     <?php if ($totalLabelSheet > 84): ?>
     <p class="text-warning small no-print mb-2"><i class="bi bi-exclamation-triangle"></i> Total (<?= $totalLabelSheet ?>) lebih dari 84 (kapasitas 1 lembar fisik). Grid di lembar ke-2 dst berisiko bergeser saat dicetak lintas-halaman. Disarankan cetak bertahap maks. 84 label per lembar untuk hasil paling presisi.</p>
     <?php endif; ?>
+  <?php endif; ?>
+  <?php if (($labelSize ?? '') === '32x19'): ?>
+  <style>
+    /* Kalibrasi dari Pengaturan > Kalibrasi Cetak Label, override default custom.css */
+    .label-sheet.sheet-32x19 {
+      --m-top: <?= sprintf('%.2f', $calMarginTop) ?>mm;
+      --m-left: <?= sprintf('%.2f', $calMarginLeft) ?>mm;
+      --gap-x: <?= sprintf('%.2f', $calGapX) ?>mm;
+      --gap-y: <?= sprintf('%.2f', $calGapY) ?>mm;
+    }
+  </style>
   <?php endif; ?>
   <div class="print-page">
     <div class="label-sheet<?= ($labelSize ?? '') === '32x19' ? ' sheet-32x19' : '' ?>">
